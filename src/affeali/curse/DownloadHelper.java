@@ -43,6 +43,7 @@ public class DownloadHelper {
 		cloneManifestFiles(manifest.files);
 		File overridesDir = new File(DECOMP_DIR, manifest.overrides);
 
+		Main.log("Copying overrides...");
 		Files.walk(overridesDir.toPath()).forEach(path -> {
 			try {
 				Files.copy(path, Paths.get(path.toString().replace(overridesDir.toString(), TMP_DIR.toString())));
@@ -53,8 +54,8 @@ public class DownloadHelper {
 	public static void cloneManifestFiles(Collection<CurseFile> files) throws IOException {
 		int i = 1;
 		for(JsonObjects.CurseFile file : files) {
+			Main.log("Downloading file " + i + "/" + files.size());
 			new CurseProject(file.projectID).saveFile(file.fileID);
-			System.out.println("Downloading file " + i + "/" + files.size());
 			i++;
 		}
 	}
@@ -82,7 +83,7 @@ public class DownloadHelper {
 	public static void saveFile(String url, String filePath) throws IOException {
 		FileInput fi = downloadFileFollowRedirects(url);
 		if(!new File(filePath + fi.name).exists()) Files.copy(fi.stream, new File(filePath + fi.name).toPath());
-		else System.out.println("Skipping download of " + fi.name);
+		else Main.log("Skipping download of " + fi.name);
 	}
 	
 	public static FileInput downloadFileFollowRedirects(String url) throws MalformedURLException, IOException {
@@ -121,6 +122,10 @@ public class DownloadHelper {
 		}
 		public InputStream stream;
 		public String name;
+	}
+
+	public static void cleanCache() {
+		
 	}
 
 }

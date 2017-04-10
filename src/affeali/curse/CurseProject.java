@@ -31,6 +31,7 @@ public class CurseProject {
 			url = url.replace(DownloadHelper.curseforge + "/projects/", "");
 			url = url.replace("?cookieTest=1", "");
 			is.close();
+			Main.logV("Found name for project " + id + ":" + url);
 			return url;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -53,6 +54,7 @@ public class CurseProject {
 			
 			int pos = result.indexOf(".projectID = \"") + 14;
 			this.id = Integer.parseInt(result.substring(pos, result.indexOf("\";", pos)));
+			Main.logV("Found id for project " + name + ":" + id);
 		}
 		catch(IOException e) {
 			e.printStackTrace();
