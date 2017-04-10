@@ -10,6 +10,8 @@ public class Main {
 	
 	static boolean verbose;
 	static boolean quiet;
+	public static File multiMCInstances = new File(".");
+	public static boolean realtimeApply = true;
 	
 	public static void main(String[] args) {
 		if(args.length < 1) {
@@ -27,6 +29,10 @@ public class Main {
 		for(int i = ignore; i < args.length; i++) {
 			if(args[i].equals("-q")) quiet = true;
 			else if(args[i].equals("-v")) verbose = true;
+			else if(args[i].equals("-M")) {
+				multiMCInstances = new File(args[i + 1]);
+				i += 1;
+			}
 		}
 	}
 
