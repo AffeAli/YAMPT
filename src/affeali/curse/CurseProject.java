@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,10 +16,11 @@ public class CurseProject {
 	
 	int id;
 	String name;
+	transient HashMap<MinecraftVersions, List<CurseFile>> fileCache = new HashMap<>();
 	
 	public CurseProject(int id) {
 		this.id = id;
-		name = resolveName();
+		if(name == null) name = resolveName();
 	}
 	
 	private String resolveName() {
@@ -43,7 +45,7 @@ public class CurseProject {
 
 	public CurseProject(String name) {
 		this.name = name;
-		resolveID();
+		if(id == 0) resolveID();
 	}
 	
 	private void resolveID() {
@@ -81,6 +83,7 @@ public class CurseProject {
 	}
 	
 	public List<CurseFile> getFilesForVersion(MinecraftVersions version) {
+		if(fileCache.containsKey(version)) return fileCache.get(version);
 		ArrayList<CurseFile> list = new ArrayList<>();
 		try {
 			URLConnection conn = new URL(getURL() + "/files?filter-game-version=" + version.filterId).openConnection();
@@ -108,6 +111,8 @@ public class CurseProject {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		fileCache.put(version, list);
+		
 		return list;
 	}
 	

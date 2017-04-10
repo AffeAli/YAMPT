@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import affeali.curse.JsonObjects.CurseFile;
 import affeali.curse.JsonObjects.Manifest;
@@ -27,7 +28,7 @@ public class DownloadHelper {
 	public static final String curseforge = "https://minecraft.curseforge.com";
 	public static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir") + "/curseDownloader/minecraft");
 	public static final File DECOMP_DIR = new File(System.getProperty("java.io.tmpdir") + "/curseDecomp");
-	public static Gson GSON = new Gson();
+	public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	
 	static {
 		if(!TMP_DIR.exists()) TMP_DIR.mkdirs();
@@ -126,6 +127,13 @@ public class DownloadHelper {
 
 	public static void cleanCache() {
 		
+	}
+
+	public static void deleteRecursively(File folder) {
+		for(File f : folder.listFiles()) {
+			if(f.isDirectory()) deleteRecursively(f);
+			else f.delete();
+		}
 	}
 
 }
