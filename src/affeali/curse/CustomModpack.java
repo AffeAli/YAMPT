@@ -136,6 +136,17 @@ public class CustomModpack {
 			this.fileID = fileId;
 		}
 		
+		public ModpackMod(String name, int fileId, CustomModpack pack) {
+			modpack = pack;
+			try {
+				project = new CurseProject(Integer.parseInt(name));
+			}
+			catch(NumberFormatException e) {
+				project = new CurseProject(name);
+			}
+			updateFileID(fileId);
+		}
+		
 		public boolean updateFileID(int newID) {
 			CurseFile newCF = project.getFilesForVersion(modpack.mcVersion).stream().filter(f -> f.fileID == newID).findFirst().orElse(null);
 			if(newCF == null) return false;
