@@ -2,10 +2,12 @@ package affeali.curse;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import affeali.curse.CurseProject.MinecraftVersions;
 
@@ -42,6 +44,7 @@ public class CustomModpack {
 				
 				updateJson();
 			}
+			else Main.logE("Modpack already existing");
 		}
 		catch(IOException e) {
 			e.printStackTrace();
@@ -49,10 +52,15 @@ public class CustomModpack {
 		
 		files.forEach(m -> m.modpack = this);
 	}
+	
+	public File getFolder() {
+		if(FOLDER != null) return FOLDER;
+		else return FOLDER = new File(Main.multiMCInstances, name + "/minecraft/");
+	}
 
 	private void updateJson() {
 		try {
-			BufferedWriter writer2 = new BufferedWriter(new FileWriter(new File(FOLDER.getParentFile(), "modpack.json")));
+			BufferedWriter writer2 = new BufferedWriter(new FileWriter(new File(getFolder().getParentFile(), "modpack.json")));
 			writer2.write(DownloadHelper.GSON.toJson(this));
 			writer2.close();
 		}
@@ -61,19 +69,35 @@ public class CustomModpack {
 		}
 	}
 	
-	public void addMod(ModpackMod mod) {
+	public boolean addMod(ModpackMod mod) {
 		mod.modpack = this;
+		if(files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null) != null) return false;
 		files.add(mod);
 		updateJson();
 		if(Main.realtimeApply) mod.saveFile();
+		return true;
 	}
 	
 	public void rebuild(boolean destructive) {
 		if(destructive) {
-			DownloadHelper.deleteRecursively(FOLDER);
+			DownloadHelper.deleteRecursively(getFolder());
 		}
-		DownloadHelper.deleteRecursively(new File(FOLDER, "mods"));
+		DownloadHelper.deleteRecursively(new File(getFolder(), "mods"));
 		files.forEach(a -> a.saveFile());
+	}
+	
+	public static CustomModpack parseJson(String name) {
+		String str;
+		try {
+			Scanner s = new Scanner(new File(Main.multiMCInstances, name + "/modpack.json")).useDelimiter("\\A");
+			str = s.next();
+			CustomModpack modpack = DownloadHelper.GSON.fromJson(str, CustomModpack.class);
+			if(modpack.name == null) modpack.name = name;
+			return modpack;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static class ModpackMod {
@@ -88,7 +112,7 @@ public class CustomModpack {
 
 		public void saveFile() {
 			try {
-				DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.FOLDER + "/mods/");
+				DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
