@@ -81,10 +81,11 @@ public class DownloadHelper {
 		toZip(TMP_DIR.getParent(), manifest.name + "(MultiMC).zip");
 	}
 	
-	public static void saveFile(String url, String filePath) throws IOException {
+	public static String saveFile(String url, String filePath) throws IOException {
 		FileInput fi = downloadFileFollowRedirects(url);
 		if(!new File(filePath + fi.name).exists()) Files.copy(fi.stream, new File(filePath + fi.name).toPath());
 		else Main.log("Skipping download of " + fi.name);
+		return fi.name;
 	}
 	
 	public static FileInput downloadFileFollowRedirects(String url) throws MalformedURLException, IOException {
@@ -126,7 +127,8 @@ public class DownloadHelper {
 	}
 
 	public static void cleanCache() {
-		
+		deleteRecursively(DECOMP_DIR);
+		deleteRecursively(TMP_DIR.getParentFile());
 	}
 
 	public static void deleteRecursively(File folder) {

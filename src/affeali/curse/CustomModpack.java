@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import affeali.curse.CurseProject.MinecraftVersions;
+import affeali.curse.JsonObjects.CurseFile;
 
 public class CustomModpack {
 	
@@ -75,6 +76,29 @@ public class CustomModpack {
 		files.add(mod);
 		updateJson();
 		if(Main.realtimeApply) mod.saveFile();
+		Main.log("Added mod " + mod.project.name);
+		return true;
+	}
+	
+	public boolean updateMod(ModpackMod mod) {
+		mod.modpack = this;
+		ModpackMod updateMod = files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null);
+		if(updateMod == null) return false;
+		if(!updateMod.updateFileID(mod.fileID)) return false;
+		updateJson();
+		if(Main.realtimeApply) mod.saveFile();
+		Main.log("Updated mod " + updateMod.project.name + "to file " + updateMod.fileID);
+		return true;
+	}
+	
+	public boolean removeMod(ModpackMod mod) {
+		mod.modpack = this;
+		ModpackMod removeMod = files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null);
+		if(removeMod == null) return false;
+		files.remove(removeMod);
+		updateJson();
+		if(Main.realtimeApply) new File(getFolder(), "/mods/" + removeMod.getFileName()).delete();
+		Main.log("Removed mod " + removeMod.project.name);
 		return true;
 	}
 	
@@ -93,6 +117,7 @@ public class CustomModpack {
 			str = s.next();
 			CustomModpack modpack = DownloadHelper.GSON.fromJson(str, CustomModpack.class);
 			if(modpack.name == null) modpack.name = name;
+			modpack.files.forEach(f -> f.modpack = modpack);
 			return modpack;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -103,19 +128,40 @@ public class CustomModpack {
 	public static class ModpackMod {
 		public CurseProject project;
 		public int fileID;
+		public String fileName;
 		public transient CustomModpack modpack;
 		
 		public ModpackMod(int projId, int fileId) {
 			project = new CurseProject(projId);
 			this.fileID = fileId;
 		}
+		
+		public boolean updateFileID(int newID) {
+			CurseFile newCF = project.getFilesForVersion(modpack.mcVersion).stream().filter(f -> f.fileID == newID).findFirst().orElse(null);
+			if(newCF == null) return false;
+			fileID = newID;
+			return true;
+		}
 
 		public void saveFile() {
 			try {
-				DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
+				if(new File(modpack.getFolder() + "/mods/" + getFileName()).exists()) {
+					new File(modpack.getFolder() + "/mods/" + getFileName()).delete();
+				}
+				fileName = DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		public String getFileName() {
+			if(fileName == null)
+				try {
+					fileName = DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			return fileName;
 		}
 	}
 
