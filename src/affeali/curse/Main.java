@@ -68,6 +68,10 @@ public class Main {
 			String command = console.readLine(":");
 			if(command.equals("add")) {
 				ModpackMod mod = getModConsole(modpack, command);
+				for(ModpackMod m : ModDependency.getDepsToInstall(mod, modpack)) {
+					log("Adding required dependency " + m.project.name);
+					modpack.addMod(m);
+				}
 				modpack.addMod(mod);
 			}
 			else if(command.equals("remove")) {
@@ -77,6 +81,15 @@ public class Main {
 			else if(command.equals("update")) {
 				ModpackMod mod = getModConsole(modpack, command);
 				modpack.updateMod(mod);
+			}
+			else if(command.equals("updateall")) {
+				modpack.files.forEach(f -> {
+					CurseFile cf = new CurseFile();
+					cf.fileID = f.fileID;
+					cf.projectID = f.project.id;
+					cf.mcVersion = f.modpack.mcVersion;
+					if(f.project.updatesAvailable(cf)) log("Update avalible for " + f.project.name);
+				});
 			}
 			else if(command.equals("rebuild")) {
 				modpack.rebuild(false);

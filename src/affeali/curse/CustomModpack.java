@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -147,6 +150,8 @@ public class CustomModpack {
 		public CurseProject project;
 		public int fileID;
 		public String fileName;
+		private List<ModDependency> dependencies;
+		public boolean isDependency;
 		public transient CustomModpack modpack;
 		
 		public ModpackMod(int projId, int fileId) {
@@ -206,6 +211,64 @@ public class CustomModpack {
 		public String toString() {
 			return project.name + "  " + project.id + "/" + fileID + "(" + getFileName() + ")";
 		}
+		
+		public List<ModDependency> getDependencies() {
+			if(dependencies != null) return dependencies;
+			else {
+				dependencies = new ArrayList<>();
+				try {
+					generateDeps(project.getURL() + "/relations/dependencies?filter-related-dependencies=3", false);
+					
+					generateDeps(project.getURL() + "/relations/dependencies?filter-related-dependencies=2", true);
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			return dependencies;
+		}
+
+		private void generateDeps(String url, boolean b) throws IOException, MalformedURLException {
+			URLConnection conn = new URL(url).openConnection();
+			Scanner s = new Scanner(conn.getInputStream()).useDelimiter("\\A");
+			String result = s.hasNext() ? s.next() : "";
+			int searchIndex = 0;
+			for( ; ; ) {
+				int link = result.indexOf("<a href=\"https://minecraft.curseforge.com/projects/", searchIndex);
+				if (link == -1) break;
+				int linkEnd = result.indexOf("\">", link);
+				link += 51;
+				String test = result.substring(link, linkEnd);
+				dependencies.add(new ModDependency(result.substring(link, linkEnd), b));
+				searchIndex += linkEnd;
+			}
+		}
+	}
+	
+	public static class ModDependency {
+		
+		public CurseProject project;
+		public boolean optional;
+		
+		public ModDependency(String name, boolean optional) {
+			this.optional = optional;
+			project = new CurseProject(name);
+		}
+		
+		public static List<ModpackMod> getDepsToInstall(ModpackMod mod, CustomModpack pack) {
+			ArrayList<ModpackMod> list = new ArrayList<>();
+			mod.getDependencies().forEach(d -> {
+				if(!d.optional) list.add(d.toMod(pack, true));
+			});
+			return list;
+		}
+
+		private ModpackMod toMod(CustomModpack pack, boolean isDep) {
+			ModpackMod mod = new ModpackMod(project.name, -1, pack);
+			mod.isDependency = isDep;
+			return mod;
+		}
+		
 	}
 
 }
