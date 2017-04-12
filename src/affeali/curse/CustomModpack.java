@@ -77,8 +77,8 @@ public class CustomModpack {
 			return false;
 		}
 		files.add(mod);
-		updateJson();
 		if(Main.realtimeApply) mod.saveFile();
+		updateJson();
 		Main.log("Added mod " + mod.project.name);
 		return true;
 	}
@@ -94,11 +94,11 @@ public class CustomModpack {
 			Main.log("Could not update fileId");
 			return false;
 		}
-		updateJson();
 		if(Main.realtimeApply) {
 			new File(getFolder(), "/mods/" + updateMod.getFileName()).delete();
 			mod.saveFile();
 		}
+		updateJson();
 		Main.log("Updated mod " + updateMod.project.name + " to file " + updateMod.fileID);
 		return true;
 	}
@@ -111,8 +111,8 @@ public class CustomModpack {
 			return false;
 		}
 		files.remove(removeMod);
-		updateJson();
 		if(Main.realtimeApply) new File(getFolder(), "/mods/" + removeMod.getFileName()).delete();
+		updateJson();
 		Main.log("Removed mod " + removeMod.project.name);
 		return true;
 	}
