@@ -2,6 +2,7 @@ package affeali.curse;
 
 import java.io.Console;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import affeali.curse.CurseProject.MinecraftVersions;
@@ -23,7 +24,21 @@ public class Main {
 		else if(args[0].equals("download")) {
 			if(args.length < 2) wronguse();
 			parseCLIOptions(args, 2);
-			downloadPack(new File(args[1]));
+			if(args[1].endsWith(".zip")) downloadPack(new File(args[1]));
+			else {
+				String tmpfile = "";
+				try {
+					tmpfile = DownloadHelper.saveFile(DownloadHelper.curseforge + "/projects/" + args[1] + "/files/latest", tmpfile);
+				}
+				catch (FileNotFoundException e) {
+					logE("invalid modpack name");
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				downloadPack(new File(tmpfile));
+			}
 		}
 		else if(args[0].equals("modpack")) {
 			parseCLIOptions(args, 1);
