@@ -13,7 +13,7 @@ public class Main {
 	
 	static boolean verbose;
 	static boolean quiet;
-	public static File multiMCInstances = new File(".");
+	public static File multiMCInstances = new File("instances/");
 	public static boolean realtimeApply = true;
 	
 	public static void main(String[] args) {
@@ -27,6 +27,7 @@ public class Main {
 		}
 		else if(args[0].equals("modpack")) {
 			parseCLIOptions(args, 1);
+			if(!new File(multiMCInstances.getParentFile(), "accounts.json").exists()) logE("Please use -M to set the MultiMC directory.");
 			interactiveModpack();
 		}
 		else if(args[0].equals("help") || args[0].equals("--help")) printHelp();
@@ -34,7 +35,6 @@ public class Main {
 
 	private static void interactiveModpack() {
 		Console console = System.console();
-		if(multiMCInstances.toString().equals(".")) multiMCInstances = new File(console.readLine("MultiMC folder:") + "instances");
 		CustomModpack modpack;
 		String modpackName = console.readLine("Choose modpack:");
 		if((modpack = CustomModpack.parseJson(modpackName)) == null) {
@@ -50,30 +50,41 @@ public class Main {
 			else return;
 		}
 		for( ; ; ) {
-			String command = console.readLine("Avalible commands are : add, remove, update, rebuild, export, exit   :");
+			String command = console.readLine("Avalible commands are : add, remove, update, rebuild, exit, list :");
 			if(command.equals("add")) {
-				ModpackMod mod = getModConsole(modpack);
-				log(modpack.addMod(mod));
+				ModpackMod mod = getModConsole(modpack, command);
+				modpack.addMod(mod);
 			}
 			else if(command.equals("remove")) {
-				ModpackMod mod = getModConsole(modpack);
+				ModpackMod mod = getModConsole(modpack, command);
 				modpack.removeMod(mod);
 			}
 			else if(command.equals("update")) {
-				ModpackMod mod = getModConsole(modpack);
+				ModpackMod mod = getModConsole(modpack, command);
 				modpack.updateMod(mod);
 			}
 			else if(command.equals("rebuild")) {
 				modpack.rebuild(false);
 			}
+			else if(command.equals("list")) {
+				modpack.files.forEach(m -> log(m));
+			}
 			else if(command.equals("exit")) return;
 		}
 	}
 
-	private static ModpackMod getModConsole(CustomModpack pack) {
+	private static ModpackMod getModConsole(CustomModpack pack, String mode) {
 		String data = System.console().readLine("Enter Mod data:");
-		if(!data.contains("/")) logE("Wrong formatted curse project data");
-		return new ModpackMod(data.substring(0, data.indexOf("/")), Integer.parseInt(data.substring(data.indexOf("/") + 1)), pack);
+		String project, file = "-1";
+		if(data.contains("/")) {
+			project = data.substring(0, data.indexOf("/"));
+			file = data.substring(data.indexOf("/") + 1);
+		}
+		else {
+			project = data;
+			log("No version specified, choosing latest");
+		}
+		return new ModpackMod(project, Integer.parseInt(file), pack);
 	}
 
 	private static void parseCLIOptions(String[] args, int ignore) {

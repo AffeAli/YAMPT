@@ -72,7 +72,10 @@ public class CustomModpack {
 	
 	public boolean addMod(ModpackMod mod) {
 		mod.modpack = this;
-		if(files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null) != null) return false;
+		if(files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null) != null) {
+			Main.log("Mod already in use! Please use update to change its version");
+			return false;
+		}
 		files.add(mod);
 		updateJson();
 		if(Main.realtimeApply) mod.saveFile();
@@ -83,18 +86,30 @@ public class CustomModpack {
 	public boolean updateMod(ModpackMod mod) {
 		mod.modpack = this;
 		ModpackMod updateMod = files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null);
-		if(updateMod == null) return false;
-		if(!updateMod.updateFileID(mod.fileID)) return false;
+		if(updateMod == null) {
+			Main.log("Mod not in use! Please use add to add it to the pack");
+			return false;
+		}
+		if(!updateMod.updateFileID(mod.fileID)) {
+			Main.log("Could not update fileId");
+			return false;
+		}
 		updateJson();
-		if(Main.realtimeApply) mod.saveFile();
-		Main.log("Updated mod " + updateMod.project.name + "to file " + updateMod.fileID);
+		if(Main.realtimeApply) {
+			new File(getFolder(), "/mods/" + updateMod.getFileName()).delete();
+			mod.saveFile();
+		}
+		Main.log("Updated mod " + updateMod.project.name + " to file " + updateMod.fileID);
 		return true;
 	}
 	
 	public boolean removeMod(ModpackMod mod) {
 		mod.modpack = this;
 		ModpackMod removeMod = files.stream().filter(f -> f.project.id == mod.project.id).findFirst().orElse(null);
-		if(removeMod == null) return false;
+		if(removeMod == null) {
+			Main.log("Unable to remove mod! Mod is not in this pack");
+			return false;
+		}
 		files.remove(removeMod);
 		updateJson();
 		if(Main.realtimeApply) new File(getFolder(), "/mods/" + removeMod.getFileName()).delete();
@@ -107,7 +122,10 @@ public class CustomModpack {
 			DownloadHelper.deleteRecursively(getFolder());
 		}
 		DownloadHelper.deleteRecursively(new File(getFolder(), "mods"));
+		Main.log("Downloading all files...");
 		files.forEach(a -> a.saveFile());
+		updateJson();
+		Main.log("Rebuild complete!");
 	}
 	
 	public static CustomModpack parseJson(String name) {
@@ -144,7 +162,8 @@ public class CustomModpack {
 			catch(NumberFormatException e) {
 				project = new CurseProject(name);
 			}
-			updateFileID(fileId);
+			if(fileId != -1)updateFileID(fileId);
+			else updateFileID(project.getFilesForVersion(pack.mcVersion).get(0).fileID);
 		}
 		
 		public boolean updateFileID(int newID) {
@@ -160,19 +179,32 @@ public class CustomModpack {
 					new File(modpack.getFolder() + "/mods/" + getFileName()).delete();
 				}
 				fileName = DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
-			} catch (IOException e) {
+			}
+			catch (FileNotFoundException e) {
+				Main.logE("Invalid fileId");
+			}
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		public String getFileName() {
 			if(fileName == null)
-				try {
-					fileName = DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
-				} catch (IOException e) {
+			try {
+				fileName = DownloadHelper.saveFile(project.getDownloadURL(fileID), modpack.getFolder() + "/mods/");
+			}
+			catch (FileNotFoundException e) {
+				Main.logE("Invalid fileId");
+			}
+			catch (IOException e) {
 					e.printStackTrace();
 				}
 			return fileName;
+		}
+		
+		@Override
+		public String toString() {
+			return project.name + "  " + project.id + "/" + fileID + "(" + getFileName() + ")";
 		}
 	}
 

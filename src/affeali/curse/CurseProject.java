@@ -1,5 +1,6 @@
 package affeali.curse;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -58,6 +59,9 @@ public class CurseProject {
 			this.id = Integer.parseInt(result.substring(pos, result.indexOf("\";", pos)));
 			Main.logV("Found id for project " + name + ":" + id);
 		}
+		catch(FileNotFoundException e) {
+			Main.logE("Unable to find project " + name);
+		}
 		catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -83,6 +87,7 @@ public class CurseProject {
 	}
 	
 	public List<CurseFile> getFilesForVersion(MinecraftVersions version) {
+		if(fileCache == null) fileCache = new HashMap<>();
 		if(fileCache.containsKey(version)) return fileCache.get(version);
 		ArrayList<CurseFile> list = new ArrayList<>();
 		try {
