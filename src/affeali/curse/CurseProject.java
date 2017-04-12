@@ -117,7 +117,7 @@ public class CurseProject {
 			e.printStackTrace();
 		}
 		fileCache.put(version, list);
-		
+		if(list.size() == 0) Main.logE("Unable to find files for version");
 		return list;
 	}
 	

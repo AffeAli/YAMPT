@@ -142,9 +142,8 @@ public class CustomModpack {
 			modpack.files.forEach(f -> f.modpack = modpack);
 			return modpack;
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 	
 	public static class ModpackMod {
@@ -262,6 +261,7 @@ public class CustomModpack {
 		
 		public static List<ModpackMod> getDepsToInstall(ModpackMod mod, CustomModpack pack) {
 			ArrayList<ModpackMod> list = new ArrayList<>();
+			if(mod.getDependencies().size() == 0) return list;
 			mod.getDependencies().forEach(d -> {
 				if(!d.optional) list.add(d.toMod(pack, true));
 			});
@@ -270,6 +270,7 @@ public class CustomModpack {
 		
 		public static List<ModpackMod> getOptionalDeps(ModpackMod mod, CustomModpack pack) {
 			ArrayList<ModpackMod> list = new ArrayList<>();
+			if(mod.getDependencies().size() == 0) return list;
 			mod.getDependencies().forEach(d -> {
 				if(d.optional) list.add(d.toMod(pack, true));
 			});
