@@ -65,7 +65,7 @@ public class Main {
 			else return;
 		}
 		for( ; ; ) {
-			String command = console.readLine("Avalible commands are : add, remove, update, rebuild, exit, list :");
+			String command = console.readLine(":");
 			if(command.equals("add")) {
 				ModpackMod mod = getModConsole(modpack, command);
 				modpack.addMod(mod);
@@ -85,6 +85,7 @@ public class Main {
 				modpack.files.forEach(m -> log(m));
 			}
 			else if(command.equals("exit")) return;
+			else log("Avalible commands are : add, remove, update, rebuild, exit, list, updateall.");
 		}
 	}
 
