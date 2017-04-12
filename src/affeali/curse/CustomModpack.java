@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import affeali.curse.CurseProject.MinecraftVersions;
+import affeali.curse.CustomModpack.ModpackMod;
 import affeali.curse.JsonObjects.CurseFile;
 
 public class CustomModpack {
@@ -243,6 +244,10 @@ public class CustomModpack {
 				searchIndex += linkEnd;
 			}
 		}
+
+		public void clearDepCache() {
+			dependencies = null;
+		}
 	}
 	
 	public static class ModDependency {
@@ -262,11 +267,46 @@ public class CustomModpack {
 			});
 			return list;
 		}
+		
+		public static List<ModpackMod> getOptionalDeps(ModpackMod mod, CustomModpack pack) {
+			ArrayList<ModpackMod> list = new ArrayList<>();
+			mod.getDependencies().forEach(d -> {
+				if(d.optional) list.add(d.toMod(pack, true));
+			});
+			return list;
+		}
 
 		private ModpackMod toMod(CustomModpack pack, boolean isDep) {
 			ModpackMod mod = new ModpackMod(project.name, -1, pack);
 			mod.isDependency = isDep;
 			return mod;
+		}
+
+		public static List<ModpackMod> getUnneededDeps(CustomModpack modpack) {
+			ArrayList<ModpackMod> list = new ArrayList<>();
+			ArrayList<ModpackMod> allModsInstalledAsDeps = new ArrayList<>();
+			for(ModpackMod m : modpack.files) {
+				if(m.isDependency) allModsInstalledAsDeps.add(m);
+			}
+			ArrayList<ModpackMod> allDeps = new ArrayList<>();
+			for(ModpackMod mm : allModsInstalledAsDeps) {
+				int found = 0;
+				for(ModpackMod mm2 : allDeps) {
+					if(mm2.project.id == mm.project.id) found = 1;
+				}
+				if(found == 0) list.add(mm);
+			}
+			return list;
+		}
+
+		public static boolean isRequired(ModpackMod mod, CustomModpack modpack) {
+			if(!mod.isDependency) return false;
+			for(ModpackMod m : modpack.files) {
+				for(ModDependency d : m.getDependencies()) {
+					if(d.project.id == mod.project.id) return true;
+				}
+			}
+			return false;
 		}
 		
 	}

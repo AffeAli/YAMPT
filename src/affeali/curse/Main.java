@@ -72,6 +72,7 @@ public class Main {
 					log("Adding required dependency " + m.project.name);
 					modpack.addMod(m);
 				}
+				ModDependency.getOptionalDeps(mod, modpack).forEach(d -> log(d.project.name + " is an optional dependency"));
 				modpack.addMod(mod);
 			}
 			else if(command.equals("remove")) {
@@ -80,6 +81,7 @@ public class Main {
 			}
 			else if(command.equals("update")) {
 				ModpackMod mod = getModConsole(modpack, command);
+				mod.clearDepCache();
 				modpack.updateMod(mod);
 			}
 			else if(command.equals("updateall")) {
