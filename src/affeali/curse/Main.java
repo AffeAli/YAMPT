@@ -6,8 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import affeali.curse.CurseProject.MinecraftVersions;
+import affeali.curse.CustomModpack.ModDependency;
 import affeali.curse.CustomModpack.ModpackMod;
 import affeali.curse.DownloadHelper;
+import affeali.curse.JsonObjects.CurseFile;
 import net.lingala.zip4j.exception.ZipException;
 
 public class Main {
@@ -66,7 +68,7 @@ public class Main {
 		}
 		for( ; ; ) {
 			String command = console.readLine(":");
-			if(command.equals("add")) {
+			if(command.startsWith("add")) {
 				ModpackMod mod = getModConsole(modpack, command);
 				for(ModpackMod m : ModDependency.getDepsToInstall(mod, modpack)) {
 					log("Adding required dependency " + m.project.name);
@@ -75,11 +77,11 @@ public class Main {
 				ModDependency.getOptionalDeps(mod, modpack).forEach(d -> log(d.project.name + " is an optional dependency"));
 				modpack.addMod(mod);
 			}
-			else if(command.equals("remove")) {
+			else if(command.startsWith("remove")) {
 				ModpackMod mod = getModConsole(modpack, command);
 				modpack.removeMod(mod);
 			}
-			else if(command.equals("update")) {
+			else if(command.startsWith("update")) {
 				ModpackMod mod = getModConsole(modpack, command);
 				mod.clearDepCache();
 				modpack.updateMod(mod);
@@ -105,7 +107,11 @@ public class Main {
 	}
 
 	private static ModpackMod getModConsole(CustomModpack pack, String mode) {
-		String data = System.console().readLine("Enter Mod data:");
+		String[] array = mode.split(" ");
+		String data;
+		if(array.length > 1) data = array[1];
+		else data = System.console().readLine("Enter Mod data:");
+		
 		String project, file = "-1";
 		if(data.contains("/")) {
 			project = data.substring(0, data.indexOf("/"));
