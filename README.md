@@ -6,6 +6,8 @@ Jar need to be executed in a terminal:
 
 java -jar JavaCurseClient.jar [options]
 
+Options:
+
 download [Zip File] -- Generate a MultiMC Import for this file
 
 modpack -M [MultiMC Directory] -- Interactive modpack creator
@@ -15,6 +17,7 @@ modpack -M [MultiMC Directory] -- Interactive modpack creator
 1. execute java -jar JavaCurseClient.jar download [zip file]
 2. JavaCurseClient generates a zip file named Pack Name(MultiMC).zip
 3. Open MultiMC -> New instance -> Import modpack -> Pick generated zip file
+4. Add the Forge version specified in the instance notes
 
 
 ## Interactive modpack creation:
@@ -43,7 +46,7 @@ Only declaring the projectID will use the latest version of the mod.
 
 **The projectID can be switched with the project Name.**
 
-It is the last part of the project URL. (https://minecraft.curseforge.com/projects/mcjtylib -> mcjtylib)
+The name is the last part of the project URL. (https://minecraft.curseforge.com/projects/mcjtylib -> mcjtylib)
 
 #### Examples:
 

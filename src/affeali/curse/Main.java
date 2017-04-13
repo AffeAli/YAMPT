@@ -81,11 +81,6 @@ public class Main {
 				ModpackMod mod = getModConsole(modpack, command);
 				modpack.removeMod(mod);
 			}
-			else if(command.startsWith("update")) {
-				ModpackMod mod = getModConsole(modpack, command);
-				mod.clearDepCache();
-				modpack.updateMod(mod);
-			}
 			else if(command.equals("updateall")) {
 				modpack.files.forEach(f -> {
 					CurseFile cf = new CurseFile();
@@ -94,6 +89,11 @@ public class Main {
 					cf.mcVersion = f.modpack.mcVersion;
 					if(f.project.updatesAvailable(cf)) log("Update avalible for " + f.project.name);
 				});
+			}
+			else if(command.startsWith("update")) {
+				ModpackMod mod = getModConsole(modpack, command);
+				mod.clearDepCache();
+				modpack.updateMod(mod);
 			}
 			else if(command.equals("rebuild")) {
 				modpack.rebuild(false);
