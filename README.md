@@ -1,10 +1,10 @@
 # About:
-JavaCurseClient is a CLI application to download Minecraft modpacks from Curse and to create own modpacks.
+YAMPT is a CLI application to download Minecraft modpacks from Curse and to create own modpacks.
 
 # Usage:
 Jar need to be executed in a terminal:
 
-java -jar JavaCurseClient.jar [options]
+java -jar yampt.jar [options]
 
 Options:
 
@@ -14,8 +14,8 @@ modpack -M [MultiMC Directory] -- Interactive modpack creator
 
 ## Modpack downloading:
 
-1. execute java -jar JavaCurseClient.jar download [zip file]
-2. JavaCurseClient generates a zip file named Pack Name(MultiMC).zip
+1. execute java -jar yampt.jar download [zip file]
+2. YAMPT generates a zip file named Pack Name(MultiMC).zip
 3. Open MultiMC -> New instance -> Import modpack -> Pick generated zip file
 4. Add the Forge version specified in the instance notes
 
